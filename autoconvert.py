@@ -174,7 +174,7 @@ def codec_info(video_file: str) -> tuple:
 
 
 def determine_encoding_method_and_convert(
-    input_dir: str, output_dir: str, video_file: str
+    input_dir: str, output_dir: str, video_file: str, dry_run: bool = False
 ) -> bool:
     """ Determines a video file's encoding method
          and runs the converter based on the encoding
@@ -253,10 +253,12 @@ def main(args):
     for vid in files:
         # Encode with handbrake if requested
         if args.handbrake:
+            LOGGER.info("Using HandbrakeCLI to convert videos")
             success = encode_video_handbrake(args.inputdir, args.outputdir, vid)
         else:  # Use FFMPEG to encode
+            LOGGER.info("Using FFMPEG to convert videos")
             success = determine_encoding_method_and_convert(
-                args.inputdir, args.outputdir, vid
+                args.inputdir, args.outputdir, vid, dry_run=args.dry_run
             )
         if success:
             succeeded.append(vid)
