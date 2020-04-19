@@ -8,13 +8,17 @@ LOGGER = None
 
 
 def encode_video_ffmpeg(
-    input_file: str, output_file: str, video: bool = True, audio: bool = True
+    input_dir: str,
+    output_dir: str,
+    video_file: str,
+    video: bool = True,
+    audio: bool = True,
 ) -> bool:
     """
     Use FFMPEG to convert the input video to MP4 web playable
 
-    :arg input_file: The file to convert
-    :arg output_file: The location to output the result file to
+    :arg input_dir: The directory to look for the source
+    :arg output_dir: The location to output the result file to
     :arg video: True to convert video, False to skip conversion
     :arg audio: True to convert audio, False to skip audio
 
@@ -40,13 +44,13 @@ def encode_video_ffmpeg(
             "-fflags",
             "+genpts",
             "-i",
-            input_file,
+            os.path.join(input_dir, video_file),
             "-threads 0",
             "-map",
             "0",
             "-c:v libx264",
             "-c:a aac",
-            output_file,
+            os.path.join(output_dir, f"converted_{video_file}"),
         ],
         "none": [
             "ffmpeg",
@@ -54,13 +58,13 @@ def encode_video_ffmpeg(
             "-fflags",
             "+genpts",
             "-i",
-            input_file,
+            os.path.join(input_dir, video_file),
             "-threads 0",
             "-map",
             "0",
             "-c:v copy",
             "-c:a copy",
-            output_file,
+            os.path.join(output_dir, f"converted_{video_file}"),
         ],
         "audio_only": [
             "ffmpeg",
@@ -68,13 +72,13 @@ def encode_video_ffmpeg(
             "-fflags",
             "+genpts",
             "-i",
-            input_file,
+            os.path.join(input_dir, video_file),
             "-threads 0",
             "-map",
             "0",
             "-c:v copy",
             "-c:a aac",
-            output_file,
+            os.path.join(output_dir, f"converted_{video_file}"),
         ],
         "video_only": [
             "ffmpeg",
@@ -82,13 +86,13 @@ def encode_video_ffmpeg(
             "-fflags",
             "+genpts",
             "-i",
-            input_file,
+            os.path.join(input_dir, video_file),
             "-threads 0",
             "-map",
             "0",
             "-c:v libx264",
             "-c:a copy",
-            output_file,
+            os.path.join(output_dir, f"converted_{video_file}"),
         ],
     }
 
@@ -102,10 +106,15 @@ def encode_video_ffmpeg(
         ffargs = ffmpeg_args["both"]
 
     try:
+        start_time = time.time()
+        LOGGER.info(f"Beginning {video_file} conversion...")
         conversion_proc = subprocess.Popen(
             ffargs, check=True, std=subprocess.PIPE, universal_newlines=True,
         )
-        LOGGER.info(f"FFMPEG completed conversion of: {output_file}")
+        LOGGER.info(
+            f"FFMPEG completed conversion of {video_file} "
+            f"in {int(time.time() - start_time)}"
+        )
         LOGGER.debug(conversion_proc.stdout)
         return True
     except Exception as ex:
@@ -182,7 +191,7 @@ def determine_encoding_method_and_convert(
         convert_audio = False
 
     return encode_video_ffmpeg(
-        input_dir, output_dir, video=convert_video, audio=convert_audio
+        input_dir, output_dir, video_file, video=convert_video, audio=convert_audio
     )
 
 
@@ -251,7 +260,10 @@ def main(args):
             )
         if success:
             succeeded.append(vid)
-            # TODO: Rename the file with converted_ prefix
+            os.rename(
+                os.path.join(args.inputdir, vid),
+                os.path.join(args.outputdir, f"converted_{vid}"),
+            )
             # Delete the source video if the option was passed in
             if args.delete_source:
                 os.remove(os.path.join(args.inputdir, vid))
