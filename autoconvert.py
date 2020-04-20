@@ -176,8 +176,9 @@ def codec_info(video_file: str) -> tuple:
 def determine_encoding_method_and_convert(
     input_dir: str, output_dir: str, video_file: str, dry_run: bool = False
 ) -> bool:
-    """ Determines a video file's encoding method
-         and runs the converter based on the encoding
+    """ 
+    Determines a video file's encoding method
+    and runs the converter based on the encoding
     """
     audio_codec, video_codec = codec_info(os.path.join(input_dir, video_file))
     LOGGER.info(f"{video_file}: A - [{audio_codec}] V: [{video_codec}]")
@@ -190,9 +191,12 @@ def determine_encoding_method_and_convert(
     if audio_codec == "aac":
         convert_audio = False
 
-    return encode_video_ffmpeg(
-        input_dir, output_dir, video_file, video=convert_video, audio=convert_audio
-    )
+    if not dry_run:
+        return encode_video_ffmpeg(
+            input_dir, output_dir, video_file, video=convert_video, audio=convert_audio
+        )
+
+    return True
 
 
 def encode_video_handbrake(input_dir: str, output_dir: str, video_file: str) -> bool:
@@ -267,7 +271,7 @@ def main(args):
                 os.path.join(args.outputdir, f"converted_{vid}"),
             )
             # Delete the source video if the option was passed in
-            if args.delete_source:
+            if args.delete_source and not args.dry_run:
                 os.remove(os.path.join(args.inputdir, vid))
         else:
             failed.append(vid)
