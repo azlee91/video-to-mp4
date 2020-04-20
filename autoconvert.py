@@ -109,7 +109,7 @@ def encode_video_ffmpeg(
         start_time = time.time()
         LOGGER.info(f"Beginning {video_file} conversion...")
         conversion_proc = subprocess.Popen(
-            ffargs, check=True, std=subprocess.PIPE, universal_newlines=True,
+            ffargs, check=True, stdout=subprocess.PIPE, universal_newlines=True,
         )
         LOGGER.info(
             f"FFMPEG completed conversion of {video_file} "
@@ -155,7 +155,7 @@ def codec_info(video_file: str) -> tuple:
     video_codec_info = subprocess.run(
         ffprobe_args["video_codec"],
         check=True,
-        std=subprocess.PIPE,
+        stdout=subprocess.PIPE,
         universal_newlines=True,
     )
 
@@ -164,7 +164,7 @@ def codec_info(video_file: str) -> tuple:
     audio_codec_info = subprocess.run(
         ffprobe_args["audio_codec"],
         check=True,
-        std=subprocess.PIPE,
+        stdout=subprocess.PIPE,
         universal_newlines=True,
     )
 
