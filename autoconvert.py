@@ -13,6 +13,7 @@ def encode_video_ffmpeg(
     video_file: str,
     video: bool = True,
     audio: bool = True,
+    dry_run: bool = False,
 ) -> bool:
     """
     Use FFMPEG to convert the input video to MP4 web playable
@@ -108,14 +109,15 @@ def encode_video_ffmpeg(
     try:
         start_time = time.time()
         LOGGER.info(f"Beginning {video_file} conversion...")
-        conversion_proc = subprocess.Popen(
-            ffargs, check=True, stdout=subprocess.PIPE, universal_newlines=True,
-        )
+        if dry_run is False:
+            conversion_proc = subprocess.Popen(
+                ffargs, check=True, stdout=subprocess.PIPE, universal_newlines=True,
+            )
+            LOGGER.debug(conversion_proc.stdout)
         LOGGER.info(
             f"FFMPEG completed conversion of {video_file} "
             f"in {int(time.time() - start_time)}"
         )
-        LOGGER.debug(conversion_proc.stdout)
         return True
     except Exception as ex:
         LOGGER.error(repr(ex))
@@ -181,6 +183,8 @@ def determine_encoding_method_and_convert(
     and runs the converter based on the encoding
     """
     audio_codec, video_codec = codec_info(os.path.join(input_dir, video_file))
+    audio_codec = audio_codec.rstrip("\r\n")
+    video_codec = video_codec.rstrip("\r\n")
     LOGGER.info(f"{video_file}: A - [{audio_codec}] V: [{video_codec}]")
 
     convert_audio = True
@@ -191,12 +195,14 @@ def determine_encoding_method_and_convert(
     if audio_codec == "aac":
         convert_audio = False
 
-    if not dry_run:
-        return encode_video_ffmpeg(
-            input_dir, output_dir, video_file, video=convert_video, audio=convert_audio
-        )
-
-    return True
+    return encode_video_ffmpeg(
+        input_dir,
+        output_dir,
+        video_file,
+        video=convert_video,
+        audio=convert_audio,
+        dry_run=dry_run,
+    )
 
 
 def encode_video_handbrake(input_dir: str, output_dir: str, video_file: str) -> bool:
