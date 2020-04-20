@@ -52,7 +52,7 @@ def encode_video_ffmpeg(
             "libx264",
             "-c:a",
             "aac",
-            os.path.join(output_dir, f"converted_{video_file}"),
+            os.path.join(output_dir, f"converted_{video_file[:-4]}.mp4"),
         ],
         "none": [
             "ffmpeg",
@@ -67,7 +67,7 @@ def encode_video_ffmpeg(
             "copy",
             "-c:a",
             "copy",
-            os.path.join(output_dir, f"converted_{video_file}"),
+            os.path.join(output_dir, f"converted_{video_file[:-4]}.mp4"),
         ],
         "audio_only": [
             "ffmpeg",
@@ -82,7 +82,7 @@ def encode_video_ffmpeg(
             "copy",
             "-c:a",
             "aac",
-            os.path.join(output_dir, f"converted_{video_file}"),
+            os.path.join(output_dir, f"converted_{video_file[:-4]}.mp4"),
         ],
         "video_only": [
             "ffmpeg",
@@ -97,7 +97,7 @@ def encode_video_ffmpeg(
             "libx264",
             "-c:a",
             "copy",
-            os.path.join(output_dir, f"converted_{video_file}"),
+            os.path.join(output_dir, f"converted_{video_file[:-4]}.mp4"),
         ],
     }
 
