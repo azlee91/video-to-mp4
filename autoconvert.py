@@ -268,14 +268,15 @@ def main(args):
             succeeded.append(vid)
             if not args.dry_run:
                 LOGGER.info("Renaming source file with prefix 'converted_'")
+                new_name = f"converted_{vid}"
                 os.rename(
                     os.path.join(args.inputdir, vid),
-                    os.path.join(args.inputdir, f"converted_{vid}"),
+                    os.path.join(args.inputdir, new_name),
                 )
             # Delete the source video if the option was passed in
             if args.delete_source and not args.dry_run:
                 LOGGER.info("Deleting source file")
-                os.remove(os.path.join(args.inputdir, vid))
+                os.remove(os.path.join(args.inputdir, new_name))
         else:
             failed.append(vid)
 
