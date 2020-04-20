@@ -114,7 +114,7 @@ def encode_video_ffmpeg(
         start_time = time.time()
         LOGGER.info(f"Beginning {video_file} conversion...")
         if dry_run is False:
-            conversion_proc = subprocess.Popen(
+            conversion_proc = subprocess.run(
                 ffargs, check=True, stdout=subprocess.PIPE, universal_newlines=True,
             )
             LOGGER.debug(conversion_proc.stdout)
