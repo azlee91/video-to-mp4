@@ -98,12 +98,16 @@ def encode_video_ffmpeg(
     }
 
     if not audio and not video:
+        LOGGER.info("MP4 only conversion")
         ffargs = ffmpeg_args["none"]
     elif audio and not video:
+        LOGGER.info("Video only conversion")
         ffargs = ffmpeg_args["audio_only"]
     elif not audio and video:
+        LOGGER.info("Audio only conversion")
         ffargs = ffmpeg_args["video_only"]
     else:
+        LOGGER.info("Audio and Video conversion")
         ffargs = ffmpeg_args["both"]
 
     try:
@@ -116,7 +120,7 @@ def encode_video_ffmpeg(
             LOGGER.debug(conversion_proc.stdout)
         LOGGER.info(
             f"FFMPEG completed conversion of {video_file} "
-            f"in {int(time.time() - start_time)}"
+            f"in {int(time.time() - start_time)}s"
         )
         return True
     except Exception as ex:
