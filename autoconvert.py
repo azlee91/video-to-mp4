@@ -43,8 +43,6 @@ def encode_video_ffmpeg(
         "both": [
             "ffmpeg",
             "-n",
-            "-fflags",
-            "+genpts",
             "-i",
             os.path.join(input_dir, video_file),
             "-movflags",
@@ -66,8 +64,6 @@ def encode_video_ffmpeg(
         "none": [
             "ffmpeg",
             "-n",
-            "-fflags",
-            "+genpts",
             "-i",
             os.path.join(input_dir, video_file),
             "-movflags",
@@ -85,8 +81,6 @@ def encode_video_ffmpeg(
         "audio_only": [
             "ffmpeg",
             "-n",
-            "-fflags",
-            "+genpts",
             "-i",
             os.path.join(input_dir, video_file),
             "-movflags",
@@ -104,8 +98,6 @@ def encode_video_ffmpeg(
         "video_only": [
             "ffmpeg",
             "-n",
-            "-fflags",
-            "+genpts",
             "-i",
             os.path.join(input_dir, video_file),
             "-movflags",
@@ -340,7 +332,10 @@ def main(args):
         else:
             failed.append(vid)
 
-    LOGGER.info(f"Finished processing {len(files)} in {int(time.time() - start_time)}s")
+    total_time = seconds_to_time(int(time.time() - start_time))
+    LOGGER.info(
+        f"Finished processing {len(files)} in {total_time}s"
+    )
     LOGGER.info(f"Failed: {failed}\nSucceeded: {succeeded}")
 
 
