@@ -3,6 +3,7 @@ import logging
 import os
 import subprocess
 import time
+from pathlib import Path
 
 LOGGER = None
 
@@ -46,10 +47,18 @@ def encode_video_ffmpeg(
             "+genpts",
             "-i",
             os.path.join(input_dir, video_file),
+            "-movflags",
+            "faststart",
+            "-brand",
+            "mp42",
             "-map",
             "0",
             "-c:v",
             "libx264",
+            "-profile:v",
+            "high",
+            "-level:v",
+            "4.0",
             "-c:a",
             "aac",
             os.path.join(output_dir, f"converted_{video_file[:-4]}.mp4"),
@@ -61,6 +70,10 @@ def encode_video_ffmpeg(
             "+genpts",
             "-i",
             os.path.join(input_dir, video_file),
+            "-movflags",
+            "faststart",
+            "-brand",
+            "mp42",
             "-map",
             "0",
             "-c:v",
@@ -76,6 +89,10 @@ def encode_video_ffmpeg(
             "+genpts",
             "-i",
             os.path.join(input_dir, video_file),
+            "-movflags",
+            "faststart",
+            "-brand",
+            "mp42",
             "-map",
             "0",
             "-c:v",
@@ -91,6 +108,10 @@ def encode_video_ffmpeg(
             "+genpts",
             "-i",
             os.path.join(input_dir, video_file),
+            "-movflags",
+            "faststart",
+            "-brand",
+            "mp42",
             "-map",
             "0",
             "-c:v",
@@ -124,7 +145,7 @@ def encode_video_ffmpeg(
             LOGGER.debug(conversion_proc.stdout)
         LOGGER.info(
             f"FFMPEG completed conversion of {video_file} "
-            f"in {int(time.time() - start_time)}s"
+            f"in {seconds_to_time(int(time.time() - start_time))}s"
         )
         return True
     except Exception as ex:
@@ -169,7 +190,7 @@ def codec_info(video_file: str) -> tuple:
         universal_newlines=True,
     )
 
-    video_output = video_codec_info.stdout
+    video_output = video_codec_info.stdout.rstrip("\r\n")
 
     audio_codec_info = subprocess.run(
         ffprobe_args["audio_codec"],
@@ -178,7 +199,7 @@ def codec_info(video_file: str) -> tuple:
         universal_newlines=True,
     )
 
-    audio_output = audio_codec_info.stdout
+    audio_output = audio_codec_info.stdout.rstrip("\r\n")
 
     return (audio_output, video_output)
 
@@ -186,13 +207,11 @@ def codec_info(video_file: str) -> tuple:
 def determine_encoding_method_and_convert(
     input_dir: str, output_dir: str, video_file: str, dry_run: bool = False
 ) -> bool:
-    """ 
+    """
     Determines a video file's encoding method
     and runs the converter based on the encoding
     """
     audio_codec, video_codec = codec_info(os.path.join(input_dir, video_file))
-    audio_codec = audio_codec.rstrip("\r\n")
-    video_codec = video_codec.rstrip("\r\n")
     LOGGER.info(f"{video_file}: A - [{audio_codec}] V: [{video_codec}]")
 
     convert_audio = True
@@ -239,14 +258,35 @@ def encode_video_handbrake(input_dir: str, output_dir: str, video_file: str) -> 
     try:
         start_time = time.time()
         subprocess.run(handbrake_params, check=True)
-        LOGGER.info(f"{video_file} took {int(time.time() - start_time)}s")
+        LOGGER.info(
+            f"{video_file} took {seconds_to_time(int(time.time() - start_time))}s"
+        )
         return True
     except:  # noqa E722
         LOGGER.info(
             f"Error occurred trying to convert [{video_file}]; "
-            f"Took {int(time.time() - start_time)}s"
+            f"Took {seconds_to_time(int(time.time() - start_time))}s"
         )
         return False
+
+
+def seconds_to_time(sec):
+    """
+    Given seconds, convert it to high level days/hours/minutes/seconds
+    Will output something like:
+    00d:00h:01m:04s
+
+    :param sec: Seconds to convert
+    :return: String
+    """
+    day = int(sec // (24 * 3600))
+    sec %= 24 * 3600
+    hour = int(sec // 3600)
+    sec %= 3600
+    minutes = int(sec // 60)
+    sec %= 60
+
+    return f"{day:02d}d:{hour:02d}h:{minutes:02d}m:{int(sec):02d}s"
 
 
 def main(args):
@@ -255,10 +295,16 @@ def main(args):
     LOGGER.info(f"Working with input directory {args.inputdir}")
     LOGGER.info(f"Outputting results to {args.outputdir}")
     LOGGER.info(f"Option delete source files == {args.delete_source}")
+
+    # Look for files with these extensions only
+    valid_exts = [".mkv"]
+
     files = [
         f
         for f in os.listdir(args.inputdir)
-        if os.path.isfile(os.path.join(args.inputdir, f)) and "converted_" not in f
+        if os.path.isfile(os.path.join(args.inputdir, f))
+        and "converted_" not in f
+        and Path(os.path.join(args.inputdir, f)).suffix in valid_exts
     ]
 
     failed = []
