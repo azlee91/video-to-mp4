@@ -39,6 +39,8 @@ def encode_video_ffmpeg(
         If video codec not H264, and audio codec is not AAC
     """
 
+    output_file = os.path.join(output_dir, f"converted_{video_file[:-4]}.mp4")
+
     ffmpeg_args = {
         "both": [
             "ffmpeg",
@@ -59,7 +61,7 @@ def encode_video_ffmpeg(
             "4.0",
             "-c:a",
             "aac",
-            os.path.join(output_dir, f"converted_{video_file[:-4]}.mp4"),
+            output_file,
         ],
         "none": [
             "ffmpeg",
@@ -76,7 +78,7 @@ def encode_video_ffmpeg(
             "copy",
             "-c:a",
             "copy",
-            os.path.join(output_dir, f"converted_{video_file[:-4]}.mp4"),
+            output_file,
         ],
         "audio_only": [
             "ffmpeg",
@@ -93,7 +95,7 @@ def encode_video_ffmpeg(
             "copy",
             "-c:a",
             "aac",
-            os.path.join(output_dir, f"converted_{video_file[:-4]}.mp4"),
+            output_file,
         ],
         "video_only": [
             "ffmpeg",
@@ -110,7 +112,7 @@ def encode_video_ffmpeg(
             "libx264",
             "-c:a",
             "copy",
-            os.path.join(output_dir, f"converted_{video_file[:-4]}.mp4"),
+            output_file,
         ],
     }
 
@@ -142,6 +144,10 @@ def encode_video_ffmpeg(
         return True
     except Exception as ex:
         LOGGER.error(repr(ex))
+        try:
+            os.remove(output_file)
+        except:
+            pass
         return False
 
 
@@ -262,7 +268,7 @@ def encode_video_handbrake(input_dir: str, output_dir: str, video_file: str) -> 
         return False
 
 
-def seconds_to_time(sec):
+def seconds_to_time(sec: int) -> str:
     """
     Given seconds, convert it to high level days/hours/minutes/seconds
     Will output something like:
@@ -281,7 +287,7 @@ def seconds_to_time(sec):
     return f"{day:02d}d:{hour:02d}h:{minutes:02d}m:{int(sec):02d}s"
 
 
-def main(args):
+def main(args: argparse.Namespace) -> None:
     """ Converts MKV files to MP4 for web playback """
 
     LOGGER.info(f"Working with input directory {args.inputdir}")
@@ -333,9 +339,7 @@ def main(args):
             failed.append(vid)
 
     total_time = seconds_to_time(int(time.time() - start_time))
-    LOGGER.info(
-        f"Finished processing {len(files)} in {total_time}s"
-    )
+    LOGGER.info(f"Finished processing {len(files)} in {total_time}s")
     LOGGER.info(f"Failed: {failed}\nSucceeded: {succeeded}")
 
 
