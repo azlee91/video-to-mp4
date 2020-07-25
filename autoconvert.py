@@ -55,8 +55,6 @@ def encode_video_ffmpeg(
             "0",
             "-c:v",
             "libx264",
-            "-profile:v",
-            "high",
             "-level:v",
             "4.0",
             "-c:a",
@@ -120,10 +118,10 @@ def encode_video_ffmpeg(
         LOGGER.info("MP4 only conversion")
         ffargs = ffmpeg_args["none"]
     elif audio and not video:
-        LOGGER.info("Video only conversion")
+        LOGGER.info("Audio only conversion")
         ffargs = ffmpeg_args["audio_only"]
     elif not audio and video:
-        LOGGER.info("Audio only conversion")
+        LOGGER.info("Video only conversion")
         ffargs = ffmpeg_args["video_only"]
     else:
         LOGGER.info("Audio and Video conversion")
